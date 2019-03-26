@@ -33,6 +33,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
 
 #ifndef APSSID
 #define APSSID "Desk Controller"
@@ -72,6 +73,7 @@ void deskDown(){
 
 void setup() {
   delay(1000);
+  WiFi.mode(WIFI_AP);
   Serial.begin(115200);
   Serial.println();
   Serial.print("Configuring access point...");
@@ -79,15 +81,28 @@ void setup() {
   WiFi.softAP(ssid, password);
 
   IPAddress myIP = WiFi.softAPIP();
+
+  
   Serial.print("AP IP address: ");
   Serial.println(myIP);
   server.on("/", handleRoot);
   server.on("/up", deskUp);
   server.on("/down", deskDown);
+  
+  if (!MDNS.begin("desk")) {
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.println("mDNS responder started");
+  
   server.begin();
   Serial.println("HTTP server started");
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  MDNS.addService("http", "tcp", 80);
 }
 
 void loop() {
@@ -103,4 +118,5 @@ void loop() {
         }
   }
   server.handleClient();
+  MDNS.update();
 }
