@@ -135,14 +135,14 @@ void handleRoot() {
 
 void deskUp(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 400;
+  move_timeout = millis() + 500;
   digitalWrite(UP_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
 
 void deskDown(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 400;
+  move_timeout = millis() + 500;
   digitalWrite(DOWN_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
@@ -209,10 +209,10 @@ void loop() {
 
     if(creep &&
       current_time >= next_creep){
-      digitalWrite(UP_PIN, LOW);
+      digitalWrite(UP_PIN, HIGH);
       digitalWrite(LED_BUILTIN, LOW);
-      move_timeout = 100;
-      next_creep = current_time + 180000; //3 minutes
+      move_timeout = current_time + 5;
+      next_creep = current_time + 600000; //10 minutes
     }
   server.handleClient();
   MDNS.update();
