@@ -40,35 +40,120 @@
 #define APPSK  "pantspants"
 #endif
 
+#define UP_PIN 5
+#define DOWN_PIN 13
+
 /* Set these to your desired credentials. */
 const char *ssid = APSSID;
 const char *password = APPSK;
 
 ESP8266WebServer server(80);
 
-int ledState = HIGH;
-bool update_led = false;
-unsigned long long next_update = 0;
+enum desk_direction {
+  still = 0,
+  down,
+  up
+};
 
-/* Just a little test message.  Go to http://192.168.4.1 in a web browser
-   connected to this access point to see it.
-*/
+const char * web_page ="<!DOCTYPE html>"
+"<html>"
+"<head>"
+"<style>"
+
+"a.blue_button {"
+"display: block;"
+"background-color: #1da1f2;"
+"width: 100px;"
+"height: 100px;"
+"border: 1px solid #333;"
+"-webkit-border-radius: 10px;"
+"-moz-border-radius: 10px;"
+"border-radius: 10px;"
+"color: black;"
+"padding: 50px 0px;"
+"text-align: center;"
+"cursor: pointer;"
+"text-decoration: none;"
+"}"
+
+"a.red_button {"
+"display: block;"
+"background-color: #ff3300;"
+"width: 100px;"
+"height: 100px;"
+"border: 1px solid #333;"
+"-webkit-border-radius: 10px;"
+"-moz-border-radius: 10px;"
+"border-radius: 10px;"
+"color: black;"
+"padding: 50px 0px;"
+"text-align: center;"
+"cursor: pointer;"
+"text-decoration: none;"
+"}"
+
+"a.green_button {"
+"display: block;"
+"background-color: #33cc33;"
+"width: 100px;"
+"height: 100px;"
+"border: 1px solid #333;"
+"-webkit-border-radius: 10px;"
+"-moz-border-radius: 10px;"
+"border-radius: 10px;"
+"color: black;"
+"padding: 50px 0px;"
+"text-align: center;"
+"cursor: pointer;"
+"text-decoration: none;"
+"}"
+
+"</style>"
+"</head>"
+"<body>"
+"<p>Welcome to the desk controller V0.1 </p>"
+"<p><a href=\"/up\" class=\"blue_button\">Move Up</a></p>"
+"<p><a href=\"/down\" class=\"blue_button\">Move Down</a></p>"
+"<p><a href=\"/creep\" class=\"green_button\">Start Creep Up</a></p>"
+"<p><a href=\"/stop\" class=\"red_button\">Stop Creep</a></p>"
+
+"</body>"
+"</html>";
+
+desk_direction dir = still;
+
+bool creep = false;
+unsigned long long next_creep = 0;
+unsigned long long move_timeout = 0;
+
 void handleRoot() {
-  server.send(200, "text/html",
-    "<form action=\"/up\"><button class=\"favorite styled\"type=\"submit\">Go Up</button></form>");
-  Serial.println("root served");
+  server.send(200, "text/html", web_page);
 }
 
 void deskUp(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  update_led = true;
-  ledState = LOW;
-  next_update = millis();
-  Serial.println("up served");
+  move_timeout = millis() + 400;
+  digitalWrite(UP_PIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void deskDown(){
-  
+  server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
+  move_timeout = millis() + 400;
+  digitalWrite(DOWN_PIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
+void startCreep(){
+  server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
+  creep = true;
+  next_creep = millis();
+}
+
+void stopCreep(){
+  server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
+  creep = false;
+  move_timeout = millis();
 }
 
 void setup() {
@@ -88,6 +173,8 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/up", deskUp);
   server.on("/down", deskDown);
+  server.on("/creep", startCreep);
+  server.on("/stop", stopCreep);
   
   if (!MDNS.begin("desk")) {
     Serial.println("Error setting up MDNS responder!");
@@ -100,23 +187,30 @@ void setup() {
   server.begin();
   Serial.println("HTTP server started");
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(UP_PIN, OUTPUT);
+  pinMode(DOWN_PIN, OUTPUT);
+  digitalWrite(UP_PIN, LOW);
+  digitalWrite(DOWN_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH);
 
   MDNS.addService("http", "tcp", 80);
 }
 
 void loop() {
-  unsigned long long currentMillis = millis();
-  if (update_led &&
-      (currentMillis >= next_update)) {
-        digitalWrite(LED_BUILTIN, ledState);
-        if(ledState == LOW){
-          ledState = HIGH;
-          next_update = millis() + 1000;
-        } else {
-          update_led = false;
-        }
-  }
+  unsigned long long current_time = millis();
+    if(current_time >= move_timeout) {
+      digitalWrite(UP_PIN, LOW);
+      digitalWrite(DOWN_PIN, LOW);
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+
+    if(creep &&
+      current_time >= next_creep){
+      digitalWrite(UP_PIN, LOW);
+      digitalWrite(LED_BUILTIN, LOW);
+      move_timeout = 100;
+      next_creep = current_time + 180000; //3 minutes
+    }
   server.handleClient();
   MDNS.update();
 }
