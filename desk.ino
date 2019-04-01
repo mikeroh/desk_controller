@@ -37,7 +37,7 @@
 
 #ifndef APSSID
 #define APSSID "Desk Controller"
-#define APPSK  "pantspants"
+#define APPSK  "trousers"
 #endif
 
 #define UP_PIN 5
@@ -135,14 +135,14 @@ void handleRoot() {
 
 void deskUp(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 500;
+  move_timeout = millis() + 750;
   digitalWrite(UP_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
 
 void deskDown(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 500;
+  move_timeout = millis() + 750;
   digitalWrite(DOWN_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
