@@ -114,11 +114,11 @@ const char * web_page ="<!DOCTYPE html>"
 "</style>"
 "</head>"
 "<body>"
-"<p><font size=\"30\">Welcome to the desk controller V0.1</font></p>"
+"<p><font size=\"30\">Welcome to the desk controller V0.2</font></p>"
 "<p><a href=\"/up\" class=\"blue_button\">Move Up</a></p>"
 "<p><a href=\"/down\" class=\"blue_button\">Move Down</a></p>"
 "<p><a href=\"/creep\" class=\"green_button\">Start Creep Up</a></p>"
-"<p><a href=\"/stop\" class=\"red_button\">Stop Creep</a></p>"
+"<p><a href=\"/stop\" class=\"red_button\">Stop</a></p>"
 
 "</body>"
 "</html>";
@@ -135,14 +135,14 @@ void handleRoot() {
 
 void deskUp(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 750;
+  move_timeout = millis() + 10000;
   digitalWrite(UP_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
 
 void deskDown(){
   server.send(200, "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
-  move_timeout = millis() + 750;
+  move_timeout = millis() + 5000;
   digitalWrite(DOWN_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW);
 }
@@ -211,7 +211,7 @@ void loop() {
       current_time >= next_creep){
       digitalWrite(UP_PIN, HIGH);
       digitalWrite(LED_BUILTIN, LOW);
-      move_timeout = current_time + 5;
+      move_timeout = current_time + 250;
       next_creep = current_time + 600000; //10 minutes
     }
   server.handleClient();
