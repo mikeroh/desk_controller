@@ -49,12 +49,6 @@ const char *password = APPSK;
 
 ESP8266WebServer server(80);
 
-enum desk_direction {
-  still = 0,
-  down,
-  up
-};
-
 const char * web_page ="<!DOCTYPE html>"
 "<html>"
 "<head>"
@@ -123,7 +117,6 @@ const char * web_page ="<!DOCTYPE html>"
 "</body>"
 "</html>";
 
-desk_direction dir = still;
 
 bool creep = false;
 unsigned long long next_creep = 0;
