@@ -40,8 +40,8 @@
 #define APPSK  "trousers"
 #endif
 
-#define UP_PIN 5
-#define DOWN_PIN 13
+#define UP_PIN 13
+#define DOWN_PIN 5
 
 /* Set these to your desired credentials. */
 const char *ssid = APSSID;
